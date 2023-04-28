@@ -15,15 +15,18 @@ def checkexist():
 
 #This is used to make sure the user is who they say they are.
 def checkuser():
+	#Setting up the email capability
 	port = 465
 	sender_email = "plcsproject1@gmail.com"
 	email_password = "aibpixuxmwmxegag"
 	subject = "passwdman code"
+	#Get the username and password for the user.
 	print("What is your username?")
 	name = input("")
 	print("What is your password for this manager?")
 	passwd = input("")
 	passwd = passwd + "\n"
+	#Generate the code
 	code = random.randint(100000, 999999)
 	message = "Hello there this is Passwdman. Your code is " + str(code)
 	with open("/etc/passwdman/profile.txt", 'r') as f:
@@ -34,6 +37,7 @@ def checkuser():
 			else:
 				return 1
 	access = 0
+	#This not only allows the user to input the email code and even will resend the email.
 	while access < 2:
 		print("Now please enter your email address so that we can varify that it is you.")
 		receiver_email = input("")
@@ -44,6 +48,7 @@ def checkuser():
 		em.set_content(message)
 		context = ssl.create_default_context()
 
+		#Sets up the smtp server using SSL for security too.
 		with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
 			server.login(sender_email, email_password)
 			server.sendmail(sender_email, receiver_email, em.as_string())
@@ -81,7 +86,7 @@ def encrypt(text):
 	privatekey = bytes("xxxxxxxxxxxxxxxx", 'utf-8')
 	iv = bytes("yyyyyyyyyyyyyyyy", 'utf-8')
 	cipher = AES.new(privatekey, AES.MODE_CBC, iv)
-	encrypted = cipher.encrypt(pad(text.encode("UTF-8"), AES.block_size))
+	encrypted = cipher.encrypt(pad(text.encode("UTF-8"), AES.block_size))	#Apply the cipher to the text.
 	return b64encode(encrypted).decode('utf-8')	
 	
 #This performs AES decryption on the password.
@@ -90,17 +95,18 @@ def decrypt(ciphertext):
 	iv = bytes("yyyyyyyyyyyyyyyy", 'utf-8')
 	ciphertext = base64.b64decode(ciphertext)
 	cipher = AES.new(privatekey, AES.MODE_CBC, iv)
-	return unpad(cipher.decrypt(ciphertext), AES.block_size)
+	return unpad(cipher.decrypt(ciphertext), AES.block_size)	#Make the text decrypted.
 	
 #This allows the user to add a new entry to storage.
 def appendnew():
 	print()
 	print()
-	
+	#Gets the username, password and website name.
 	username = input("Please enter the username: ")
 	password = input("Please enter the password: ")
 	cpassword = encrypt(password)
-	website = input("Please enter the web address: ").lower()
+	website = input("Please enter the website name: ").lower()
+	#Check if the entry already exists.
 	check = checkentry(website)
 	if check == 0:
 		file = open("/etc/passwdman/info.txt", 'a')
@@ -144,6 +150,7 @@ def passencryption():
 			else:
 				pass
 		if exist == True:
+			#Based on the number of the line the user wishes to see then reveal the lines before it.
 			username = infolist[num - 2]
 			password = decrypt(infolist[num - 1])
 			readable_pass = password.decode('utf-8')
@@ -157,6 +164,7 @@ def passencryption():
 #This allows the user to change the password to the tool	
 def changepasswd():
 	print("In this you will chnage the password that you use to enter this password manager.")
+	#Checks the old password first for security.
 	print("First, just to check please enter your current password.")
 	old_pass = input("")
 	old_pass = old_pass + "\n"
@@ -169,6 +177,7 @@ def changepasswd():
 			print("Sorry, that is incorrect.")
 			optionselector()
 	f.close()
+	#Lets the user input a new password.
 	print("Okay now please enter the new password you'd like to change your current one to.")
 	new_pass = input("")
 	new_pass = new_pass + "\n"
@@ -195,6 +204,7 @@ def removeentry():
 	info.close()
 	info = open("/etc/passwdman/info.txt", 'w')
 	if exist == True:
+		#This removes the entry based on the index of the line that matched
 		for i in range(len(infolist)):
 			if i >= (num - 3) and i < (num + 2):
 				pass
@@ -209,8 +219,10 @@ def removeentry():
 #This allows a user to change an already existing entry.
 def modify():
 	print("Starting modification.")
+	#Removes the entry
 	removeentry()
 	print("Please enter the details of the entry to be updated.")
+	#Lets the user enter the updated details
 	appendnew()
 	print("Modification complete.")
 	
@@ -261,14 +273,17 @@ Enter:
 			print("Not a valid option.")
 	
 print("Welcome to my Password Manager")
+#Introduction to the tool.
 BLOCK_SIZE = 16
 print("In this program you will be able to store various usernames and passwords to different websites and then retreive them using this program.")
 print("Oh and do not worry this password manager is super duper safe so no need to worry about that.")
+#Performs a check first before going into the option selector.
 print("First enter the user and your personal password.")
 check = checkuser()
 if check == 1:
 	print("Sorry, that is wrong.")
 else:
 	print("Okay, you passed the test.")
+	#Go to the option selector.
 	optionselector()
 
